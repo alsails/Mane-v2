@@ -1,6 +1,6 @@
-:HL["/Mane-v2/_next/static/css/b3ecf635b4d8eb43.css","style"]
+:HL["/Mane-v2/_next/static/css/53901f9b2e84b383.css","style"]
 :HL["/Mane-v2/_next/static/css/3cac080a1e5ba64f.css","style"]
 :HL["/Mane-v2/legacy/assets/source-d181eb793ccdb4dd.png","image"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"politics","h":96,"c":"$Q2"}]]
-0:{"b":"GbXdEXI0G6gofcuqGi4dW","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"A0S6SgVHW3rnCeDdeRJgh","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
