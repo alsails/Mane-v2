@@ -1,0 +1,6 @@
+:HL["/Mane-v2/_next/static/chunks/3wqwabxw7x4uo.css","style"]
+:HL["/Mane-v2/_next/static/chunks/1sqk_it_dltur.css","style"]
+:HL["/Mane-v2/legacy/assets/source-d181eb793ccdb4dd.png","image"]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"home2","h":96,"c":"$Q2"}]]
+0:{"b":"o23pB5z60TZ8fTqeW-zb5","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

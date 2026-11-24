@@ -2,10 +2,10 @@
 (() => {
   function initPortfolio() {
     const methods = {
-      place: ["01 / Источник идеи", "Что делает это место особенным?", "Изучаем ландшафт, локальную историю, традиции и ремёсла. Находим один смысловой центр, вокруг которого выстраивается концепция отеля."],
-      guest: ["02 / Сценарий гостя", "Для кого создаётся отель?", "Изучаем привычки гостя, причины путешествия и ожидания от поездки. Продумываем его день: от входной группы и лобби до ресторана, SPA и номера."],
-      business: ["03 / Задача собственника", "Что важно для вашего объекта?", "Учитываем формат, вместимость, сезонность, питание, логистику персонала, коммуникации, сроки и бюджет. Формулируем общие цели до начала проектирования."],
-      design: ["04 / Воплощение идеи", "Как история станет интерьером?", "Переводим смысл в палитру, материалы, зонирование и детали. Прорабатываем точки касания, навигацию, айдентику и образ пространства."],
+      place: ["01 / Источник идеи", "Что делает это место особенным?", "Изучаем окружение, историю района и архитектуру здания. Выбираем идею, которая связывает особенности места с характером бренда."],
+      guest: ["02 / Опыт посетителя", "Что нужно посетителю?", "Разбираем путь посетителя: как он находит вход, ориентируется в пространстве, выбирает товар или получает услугу. Продумываем, где ему нужна подсказка, а где важно дать время освоиться."],
+      business: ["03 / Задача собственника", "Какие задачи должен решить интерьер?", "Уточняем цели собственника, формат работы и бюджет. Планируем потоки посетителей и сотрудников, работу сервиса и возможности для развития бизнеса."],
+      design: ["04 / Воплощение идеи", "Как воплотить идею в интерьере?", "Выражаем характер бренда через планировку, свет, материалы и детали. Разрабатываем навигацию и учитываем, как пространство будут использовать каждый день."],
     };
 
     const methodButtons = Array.from(document.querySelectorAll("[data-method]"));
@@ -20,6 +20,34 @@
     let motionPaused = motionChoice ?? reducedMotion.matches;
     let previewedCard = null;
     let lastTouchCard = null;
+
+    function reserveMethodPanelSpace() {
+      const panel = document.getElementById("method-panel");
+      if (!panel) return;
+
+      const stack = document.createElement("div");
+      stack.className = "method-panel-stack";
+      panel.before(stack);
+      stack.append(panel);
+
+      // Hidden panels share the same grid cell so its height follows the longest copy.
+      for (const [index, title, text] of Object.values(methods)) {
+        const sizer = document.createElement("div");
+        sizer.className = "method-panel method-panel-sizer";
+        sizer.setAttribute("aria-hidden", "true");
+
+        const label = document.createElement("span");
+        const question = document.createElement("h3");
+        const description = document.createElement("p");
+        label.textContent = index;
+        question.textContent = title;
+        description.textContent = text;
+        sizer.append(label, question, description);
+        stack.append(sizer);
+      }
+    }
+
+    reserveMethodPanelSpace();
 
     function selectMethod(key) {
       const data = methods[key];
@@ -58,6 +86,28 @@
     if (reviewData?.textContent) {
       try { reviews = JSON.parse(reviewData.textContent); } catch { /* Keep the static first review. */ }
     }
+    function reserveReviewTextSpace(id, sizerClass, field) {
+      const text = document.getElementById(id);
+      if (!text || reviews.length < 2) return;
+
+      // Size each visible row from all variants at the current column width.
+      const stack = document.createElement("div");
+      stack.className = "review-text-stack";
+      text.before(stack);
+      stack.append(text);
+
+      for (const review of reviews) {
+        const sizer = document.createElement(text.localName);
+        sizer.className = "review-text-sizer " + sizerClass;
+        sizer.setAttribute("aria-hidden", "true");
+        sizer.textContent = review[field];
+        stack.append(sizer);
+      }
+    }
+
+    reserveReviewTextSpace("review-quote", "review-quote-sizer", "quote");
+    reserveReviewTextSpace("review-author", "review-author-sizer", "author");
+
     function selectReview(index) {
       const review = reviews[index];
       const quote = document.getElementById("review-quote");

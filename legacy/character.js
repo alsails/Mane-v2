@@ -170,8 +170,8 @@
       document.getElementById('quiz-back').addEventListener('click', () => step(1));
       function estimate() {
         const a = Number(area.value), valid = area.validity.valid && a > 0;
-        document.getElementById('design-estimate').textContent = valid ? 'от ' + (a * 5000).toLocaleString('ru-RU') + ' ₽' : '—';
-        document.getElementById('supply-estimate').textContent = valid ? 'от ' + (a * 1500).toLocaleString('ru-RU') + ' ₽' : '—';
+        document.getElementById('design-estimate').textContent = valid ? 'от ' + (a * 5000).toLocaleString('ru-RU') + ' ₽' : '–';
+        document.getElementById('supply-estimate').textContent = valid ? 'от ' + (a * 1500).toLocaleString('ru-RU') + ' ₽' : '–';
       }
       area.addEventListener('input', estimate); estimate();
       quizForm.addEventListener('submit', event => {
@@ -195,11 +195,6 @@
       document.getElementById('draft-email').href = 'mailto:juliamanedesign@gmail.com?subject=' + encodeURIComponent('Объект для MANE') + '&body=' + encodeURIComponent(draft);
       document.getElementById('draft-dialog').showModal();
     });
-
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('arrived'); observer.unobserve(entry.target); } });
-    }, { threshold: .08 });
-    document.querySelectorAll('[data-reveal]').forEach(e => observer.observe(e));
   }
 
   if (document.readyState === "loading") {

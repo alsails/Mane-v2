@@ -1,4 +1,5 @@
-:HL["/Mane-v2/_next/static/chunks/3i39cwccsfhef.css","style"]
+:HL["/Mane-v2/_next/static/chunks/3wqwabxw7x4uo.css","style"]
+:HL["/Mane-v2/_next/static/chunks/1sqk_it_dltur.css","style"]
 :HL["/Mane-v2/legacy/assets/source-d181eb793ccdb4dd.png","image"]
 1:[["children",{"s":"__PAGE__","h":160}]]
-0:{"b":"pN_DOc1Ck9n35HXjIKV0N","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"o23pB5z60TZ8fTqeW-zb5","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
