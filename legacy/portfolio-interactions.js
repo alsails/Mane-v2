@@ -11,9 +11,6 @@
     const methodButtons = Array.from(document.querySelectorAll("[data-method]"));
     const filters = Array.from(document.querySelectorAll("[data-filter]"));
     const reviewButtons = Array.from(document.querySelectorAll("[data-review]"));
-    const slides = Array.from(document.querySelectorAll(".hotel-slide"));
-    const slideButtons = Array.from(document.querySelectorAll("[data-slide-to]"));
-    const slidePause = document.getElementById("slide-pause");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let motionChoice = null;
     try {
@@ -21,9 +18,8 @@
       if (saved !== null) motionChoice = saved === "true";
     } catch { /* Storage can be disabled. */ }
     let motionPaused = motionChoice ?? reducedMotion.matches;
-    let slidePaused = false;
-    let slideIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains("active")));
-    let timer;
+    let previewedCard = null;
+    let lastTouchCard = null;
 
     function selectMethod(key) {
       const data = methods[key];
@@ -82,40 +78,43 @@
       reviewButtons.forEach((button) => button.setAttribute("aria-selected", String(Number(button.dataset.review) === index)));
     }
 
-    function slideTo(index) {
-      if (!slides.length) return;
-      slideIndex = ((index % slides.length) + slides.length) % slides.length;
-      slides.forEach((slide, position) => {
-        const active = position === slideIndex;
-        slide.classList.toggle("active", active);
-        slide.setAttribute("aria-hidden", String(!active));
-        slide.tabIndex = active ? 0 : -1;
-      });
-      slideButtons.forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.slideTo) === slideIndex)));
-    }
-
-    function runSlides() {
-      if (timer) clearInterval(timer);
-      const stopped = motionPaused || slidePaused;
-      if (slidePause) {
-        slidePause.textContent = stopped ? "▷" : "Ⅱ";
-        slidePause.setAttribute("aria-label", stopped ? "Возобновить смену проектов" : "Приостановить смену проектов");
-      }
-      if (slides.length > 1 && !stopped && !document.hidden) timer = setInterval(() => slideTo(slideIndex + 1), 7000);
-    }
-
     function applyMotion() {
       document.body.dataset.motion = motionPaused ? "paused" : "running";
       document.querySelectorAll(".motion-toggle").forEach((button) => {
         button.textContent = motionPaused ? "Включить анимацию" : "Остановить анимацию";
         button.setAttribute("aria-pressed", String(motionPaused));
       });
-      runSlides();
+    }
+
+    function clearCardPreview() {
+      previewedCard?.removeAttribute("data-preview");
+      previewedCard = null;
+    }
+
+    function onPointerDown(event) {
+      lastTouchCard = event.pointerType === "touch" && event.target instanceof Element
+        ? event.target.closest("a.case-card") : null;
     }
 
     function onClick(event) {
       const target = event.target;
       if (!(target instanceof Element)) return;
+      const card = target.closest("a.case-card");
+      const touchActivation = event.pointerType === "touch"
+        || (!event.pointerType && event.detail > 0 && card === lastTouchCard);
+      lastTouchCard = null;
+      if (card && touchActivation && !event.defaultPrevented && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        const alreadyPreviewed = card === previewedCard;
+        clearCardPreview();
+        if (!alreadyPreviewed) {
+          event.preventDefault();
+          card.setAttribute("data-preview", "");
+          previewedCard = card;
+        }
+        return;
+      }
+      clearCardPreview();
+
       const method = target.closest("[data-method]");
       if (method) { selectMethod(method.dataset.method ?? ""); return; }
       const filter = target.closest("[data-filter]");
@@ -126,13 +125,6 @@
       }
       const review = target.closest("[data-review]");
       if (review) { selectReview(Number(review.dataset.review)); return; }
-      const slide = target.closest("[data-slide-to]");
-      if (slide) { slideTo(Number(slide.dataset.slideTo)); runSlides(); return; }
-      if (target.closest("#slide-pause")) {
-        if (motionPaused) { motionPaused = false; motionChoice = false; slidePaused = false; applyMotion(); }
-        else { slidePaused = !slidePaused; runSlides(); }
-        return;
-      }
       if (target.closest(".motion-toggle")) {
         motionPaused = !motionPaused;
         motionChoice = motionPaused;
@@ -142,6 +134,7 @@
     }
 
     function onKeyDown(event) {
+      if (event.key === "Escape") clearCardPreview();
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -163,21 +156,13 @@
       }
     }
 
-    function onFocusIn(event) {
-      if (event.target instanceof Element && event.target.closest(".hotel-stage .hotel-slide")) {
-        slidePaused = true;
-        runSlides();
-      }
-    }
-
     function onReducedMotionChange(event) {
       if (motionChoice === null) { motionPaused = event.matches; applyMotion(); }
     }
 
+    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("focusin", onFocusIn);
-    document.addEventListener("visibilitychange", runSlides);
     window.addEventListener("hashchange", filterFromHash);
     reducedMotion.addEventListener("change", onReducedMotionChange);
     filterFromHash();

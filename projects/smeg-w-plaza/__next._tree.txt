@@ -1,6 +1,6 @@
-:HL["/Mane-v2/_next/static/css/53901f9b2e84b383.css","style"]
+:HL["/Mane-v2/_next/static/chunks/3i39cwccsfhef.css","style"]
 :HL["/Mane-v2/legacy/assets/source-d181eb793ccdb4dd.png","image"]
 3:[["children",{"s":"__PAGE__","h":160}]]
 2:[["children",{"s":{"n":"slug","t":"d","k":"smeg-w-plaza","s":[]},"h":96,"c":"$Q3"}]]
 1:[["children",{"s":"projects","h":96,"c":"$Q2"}]]
-0:{"b":"A0S6SgVHW3rnCeDdeRJgh","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"pN_DOc1Ck9n35HXjIKV0N","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

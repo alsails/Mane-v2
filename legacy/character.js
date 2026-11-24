@@ -1,4 +1,111 @@
 (() => {
+
+  function setupPhone(phone) {
+    if (!phone) return;
+    const mask = '+7 (___) ___ - __ - __';
+    const positions = [...mask.matchAll(/_/g)].map(match => match.index);
+    const size = positions.length;
+    phone.pattern = String.raw`\+7 \([0-9]{3}\) [0-9]{3} - [0-9]{2} - [0-9]{2}`;
+    phone.title = 'Введите 10 цифр российского номера после +7';
+
+    function parsePhone(value) {
+      const digits = value.replace(/\D/g, '');
+      if (value.trimStart().startsWith('+')) return digits.startsWith('7') ? digits.slice(1) : null;
+      return digits.length === size + 1 && /^[78]/.test(digits) ? digits.slice(1) : digits;
+    }
+
+    function render(digits, caret = digits.length) {
+      let index = 0;
+      phone.value = mask.replace(/_/g, () => digits[index++] ?? '_');
+      if (document.activeElement === phone) {
+        const position = positions[caret] ?? mask.length;
+        phone.setSelectionRange(position, position);
+      }
+    }
+
+    function edit(text, direction = 0, pasted = false) {
+      const current = (parsePhone(phone.value) ?? '').slice(0, size);
+      const start = Math.min(current.length, positions.filter(index => index < phone.selectionStart).length);
+      const end = Math.min(current.length, positions.filter(index => index < phone.selectionEnd).length);
+      const from = start === end && direction < 0 ? Math.max(0, start - 1) : start;
+      const to = start === end && direction > 0 ? end + 1 : end;
+      const digits = pasted ? parsePhone(text) : text.replace(/\D/g, '');
+      if (digits === null || (pasted && digits.length > size)) {
+        phone.setCustomValidity('Введите российский номер в формате +7.');
+        phone.reportValidity();
+        return;
+      }
+      phone.setCustomValidity('');
+      const suffix = current.slice(to);
+      const inserted = digits.slice(0, size - from - suffix.length);
+      render(current.slice(0, from) + inserted + suffix, from + inserted.length);
+    }
+
+    phone.addEventListener('focus', () => {
+      const digits = parsePhone(phone.value);
+      if (!phone.value || (digits !== null && digits.length <= size && phone.validity.patternMismatch && !phone.value.includes('_'))) {
+        render(digits ?? '');
+      }
+    });
+    phone.addEventListener('blur', () => {
+      if (parsePhone(phone.value) === '') phone.value = '';
+    });
+    phone.addEventListener('beforeinput', event => {
+      if (!event.cancelable || event.isComposing) return;
+      const type = event.inputType;
+      if ((type === 'insertText' || type === 'insertReplacementText') && event.data !== null) {
+        event.preventDefault();
+        edit(event.data, 0, type === 'insertReplacementText' || event.data.length > 1);
+      } else if (type === 'deleteContentBackward' || type === 'deleteContentForward') {
+        event.preventDefault();
+        edit('', type === 'deleteContentBackward' ? -1 : 1);
+      }
+    });
+    phone.addEventListener('paste', event => {
+      if (!event.clipboardData) return;
+      event.preventDefault();
+      edit(event.clipboardData.getData('text'), 0, true);
+    });
+    phone.addEventListener('input', () => {
+      const digits = parsePhone(phone.value);
+      phone.setCustomValidity(digits === null || digits.length > size ? 'Введите российский номер в формате +7.' : '');
+      if (digits !== null && digits.length <= size) render(digits);
+    });
+  }
+
+  function setupArea(form) {
+    const slider = form.querySelector('[data-area-range]');
+    if (!slider) return;
+    const number = form.elements.area;
+    const placeholder = slider.closest('.area-slider');
+    const exact = form.querySelector('[data-area-exact]');
+    const output = form.querySelector('[data-area-value]');
+    const limit = Number(slider.max);
+    const floor = Number(slider.min);
+
+    function sync() {
+      const area = number.valueAsNumber;
+      const above = area >= limit;
+      const below = area < floor;
+      slider.value = Number.isFinite(area) ? String(area) : slider.defaultValue;
+      exact.hidden = !above && !below;
+      number.min = above ? String(limit) : '1';
+      number.required = above || below;
+      const description = above ? 'Более 500 м²' : (Number.isFinite(area) ? area : slider.value) + ' м²';
+      output.textContent = description;
+      slider.setAttribute('aria-valuetext', description);
+      placeholder.style.setProperty('--area-progress', (Number(slider.value) - floor) / (limit - floor) * 100 + '%');
+    }
+
+    slider.addEventListener('input', () => {
+      number.value = slider.value;
+      sync();
+    });
+    placeholder.hidden = false;
+    sync();
+    return sync;
+  }
+
   function initCharacter() {
     const menu = document.querySelector('.menu-toggle');
     const nav = document.getElementById('navigation');
@@ -39,28 +146,9 @@
       document.getElementById('image-dialog').showModal();
     }));
 
-    const galleryData = document.getElementById('gallery-data');
-    if (galleryData) {
-      const photos = JSON.parse(galleryData.textContent);
-      const lightbox = document.getElementById('lightbox');
-      let current = 0;
-      function showPhoto() {
-        const img = document.getElementById('lightbox-image'); img.src = photos[current].src; img.alt = photos[current].alt;
-        document.getElementById('lightbox-count').textContent = `${current + 1} / ${photos.length}`;
-      }
-      function movePhoto(direction) { current = (current + direction + photos.length) % photos.length; showPhoto(); }
-      document.querySelectorAll('[data-gallery-index]').forEach(b => b.addEventListener('click', () => {
-        current = Number(b.dataset.galleryIndex); showPhoto(); lightbox.showModal();
-      }));
-      document.getElementById('lightbox-prev').addEventListener('click', () => movePhoto(-1));
-      document.getElementById('lightbox-next').addEventListener('click', () => movePhoto(1));
-      document.getElementById('lightbox-close').addEventListener('click', () => lightbox.close());
-      lightbox.addEventListener('keydown', event => {
-        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); movePhoto(event.key === 'ArrowRight' ? 1 : -1); }
-      });
-    }
-
     const form = document.getElementById('contact-form');
+    if (form) setupPhone(form.elements.phone);
+    const syncContactArea = form && setupArea(form);
     const quiz = document.getElementById('quiz-dialog');
     const quizForm = document.getElementById('quiz-form');
     if (quiz && quizForm && form) {
@@ -89,6 +177,7 @@
       quizForm.addEventListener('submit', event => {
         event.preventDefault(); if (!quizForm.reportValidity()) return;
         form.elements.area.value = area.value;
+        syncContactArea?.();
         const objectTypes = { 'Отеля': 'Отель', 'СПА центра': 'SPA / wellness', 'Ресторана': 'Ресторан', 'Магазина': 'Шоурум или магазин', 'Офиса': 'Офис', 'Дома': 'Квартира или дом', 'Квартиры': 'Квартира или дом' };
         form.elements.object.value = objectTypes[quizForm.elements.type.value];
         form.elements.message.value = `Интересует дизайн ${quizForm.elements.type.value.toLowerCase()}, площадь ${area.value} м². Хочу обсудить концепцию и точную стоимость работ.`;
@@ -100,8 +189,10 @@
       if (!form.reportValidity()) return;
       const values = new FormData(form);
       const message = `Здравствуйте! Хочу обсудить объект со студией MANE.\n\nИмя: ${values.get('name')}\nТелефон: ${values.get('phone')}\nТип объекта: ${values.get('object')}\nЛокация: ${values.get('location') || 'Обсудим'}\nПлощадь: ${values.get('area') ? values.get('area') + ' м²' : 'Обсудим'}\nСтадия: ${values.get('stage')}\n\n${values.get('message') || ''}`;
-      document.getElementById('draft-text').textContent = message;
-      document.getElementById('draft-email').href = 'mailto:juliamanedesign@gmail.com?subject=' + encodeURIComponent('Объект для MANE') + '&body=' + encodeURIComponent(message);
+      const consentNote = `Согласие на обработку данных для этой заявки отмечено (версия ${values.get('consent')}).`;
+      const draft = `${message}\n\n${consentNote}`;
+      document.getElementById('draft-text').textContent = draft;
+      document.getElementById('draft-email').href = 'mailto:juliamanedesign@gmail.com?subject=' + encodeURIComponent('Объект для MANE') + '&body=' + encodeURIComponent(draft);
       document.getElementById('draft-dialog').showModal();
     });
 
@@ -109,17 +200,6 @@
       entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('arrived'); observer.unobserve(entry.target); } });
     }, { threshold: .08 });
     document.querySelectorAll('[data-reveal]').forEach(e => observer.observe(e));
-    let frame = false;
-    function progress() {
-      if (frame) return; frame = true;
-      requestAnimationFrame(() => {
-        const max = document.documentElement.scrollHeight - innerHeight;
-        document.querySelector('.reading-progress')?.style.setProperty('--read', max > 0 ? scrollY / max : 0);
-        frame = false;
-      });
-    }
-    addEventListener('scroll', progress, { passive: true }); addEventListener('resize', progress, { passive: true });
-    progress();
   }
 
   if (document.readyState === "loading") {
