@@ -1,6 +1,6 @@
-:HL["/Mane-v2/_next/static/chunks/3wqwabxw7x4uo.css","style"]
-:HL["/Mane-v2/_next/static/chunks/0qwu-2le7onnx.css","style"]
+:HL["/Mane-v2/_next/static/chunks/3bg28e25hf1dn.css","style"]
+:HL["/Mane-v2/_next/static/chunks/0zqsm5xi9s2jg.css","style"]
 :HL["/Mane-v2/legacy/assets/source-d181eb793ccdb4dd.png","image"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"requisites","h":96,"c":"$Q2"}]]
-0:{"b":"o23pB5z60TZ8fTqeW-zb5","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"ItA0_okkrB78ClzmtgFQP","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

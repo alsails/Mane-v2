@@ -146,12 +146,17 @@
         ? event.target.closest("a.case-card") : null;
     }
 
+    function onTouchEnd(event) {
+      // The click following a touch can be reported as a mouse click.
+      lastTouchCard = event.target instanceof Element ? event.target.closest("a.case-card") : null;
+    }
+
     function onClick(event) {
       const target = event.target;
       if (!(target instanceof Element)) return;
       const card = target.closest("a.case-card");
       const touchActivation = event.pointerType === "touch"
-        || (!event.pointerType && event.detail > 0 && card === lastTouchCard);
+        || (event.detail > 0 && card === lastTouchCard);
       lastTouchCard = null;
       if (card && touchActivation && !event.defaultPrevented && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
         const alreadyPreviewed = card === previewedCard;
@@ -211,6 +216,7 @@
     }
 
     document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("touchend", onTouchEnd, { passive: true });
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKeyDown);
     window.addEventListener("hashchange", filterFromHash);
